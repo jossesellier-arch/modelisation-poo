@@ -2,14 +2,17 @@ package cine;
 
 import java.util.Objects;
 
-public final class Projecteur {
-    private final String modele;
+public abstract class Projecteur {
+    private final String numeroDeSerie;
 
-    public Projecteur(String modele) {
-        this.modele = Objects.requireNonNull(modele, "Le modèle est obligatoire.");
+    protected Projecteur(String numeroDeSerie) {
+        this.numeroDeSerie = Objects.requireNonNull(
+            numeroDeSerie,
+            "Le numéro de série est obligatoire."
+        );
     }
 
-    public String getModele() {
-        return modele;
+    public String getNumeroDeSerie() {
+        return numeroDeSerie;
     }
 }
