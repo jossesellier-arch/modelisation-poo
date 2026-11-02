@@ -1,5 +1,6 @@
 package cine;
 
+import java.time.LocalDate;
 import java.util.Objects;
 
 public final class Salle {
@@ -8,9 +9,8 @@ public final class Salle {
     private final Projecteur projecteur;
 
     private EtatSalle etat = EtatSalle.LIBRE;
-    private Film filmEnCours;
+    private Seance seanceEnCours;
 
-    // Constructeur accessible aux classes du package cine, dont Cinema.
     Salle(int numero, int capacite, Projecteur projecteur) {
         if (numero <= 0) {
             throw new IllegalArgumentException("Le numéro doit être positif.");
@@ -21,37 +21,52 @@ public final class Salle {
 
         this.numero = numero;
         this.capacite = capacite;
-        this.projecteur = Objects.requireNonNull(
-            projecteur,
-            "Le projecteur est obligatoire."
-        );
+        this.projecteur = Objects.requireNonNull(projecteur);
     }
 
-    public void demarrerSeance(Film film) {
-        Objects.requireNonNull(film, "Le film est obligatoire.");
+    public Seance demarrerSeance(
+        SupportFilm support,
+        LocalDate date,
+        double tarifBase
+    ) {
+        Objects.requireNonNull(support, "Le support est obligatoire.");
+        Objects.requireNonNull(date, "La date est obligatoire.");
 
         if (etat != EtatSalle.LIBRE) {
             throw new IllegalStateException(
-                "Une séance ne peut démarrer que dans une salle libre."
+                "Impossible de démarrer la séance : la salle n'est pas libre."
             );
         }
 
-        filmEnCours = film;
+        if (!support.estLisiblePar(projecteur, date)) {
+            throw new IllegalStateException(
+                "Impossible de démarrer la séance : "
+                    + support.raisonIllisibilite(projecteur, date)
+            );
+        }
+
+        seanceEnCours = new Seance(this, support, date, tarifBase);
         etat = EtatSalle.EN_SEANCE;
+        return seanceEnCours;
     }
 
     public void terminerSeance() {
         if (etat != EtatSalle.EN_SEANCE) {
-            throw new IllegalStateException("La salle n'est pas en séance.");
+            throw new IllegalStateException(
+                "Impossible de terminer la séance : la salle n'est pas en séance."
+            );
         }
 
-        filmEnCours = null;
+        seanceEnCours.terminer();
+        seanceEnCours = null;
         etat = EtatSalle.EN_NETTOYAGE;
     }
 
     public void terminerNettoyage() {
         if (etat != EtatSalle.EN_NETTOYAGE) {
-            throw new IllegalStateException("La salle n'est pas en nettoyage.");
+            throw new IllegalStateException(
+                "Impossible de terminer le nettoyage : la salle n'est pas en nettoyage."
+            );
         }
 
         etat = EtatSalle.LIBRE;
@@ -73,7 +88,7 @@ public final class Salle {
         return etat;
     }
 
-    public Film getFilmEnCours() {
-        return filmEnCours;
+    public Seance getSeanceEnCours() {
+        return seanceEnCours;
     }
 }

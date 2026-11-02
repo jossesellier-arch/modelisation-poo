@@ -6,10 +6,13 @@ public abstract class Projecteur {
     private final String numeroDeSerie;
 
     protected Projecteur(String numeroDeSerie) {
-        this.numeroDeSerie = Objects.requireNonNull(
-            numeroDeSerie,
-            "Le numéro de série est obligatoire."
-        );
+        if (numeroDeSerie == null || numeroDeSerie.isBlank()) {
+            throw new IllegalArgumentException(
+                "Le numéro de série est obligatoire."
+            );
+        }
+
+        this.numeroDeSerie = numeroDeSerie;
     }
 
     public String getNumeroDeSerie() {
